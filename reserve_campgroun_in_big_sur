@@ -1,0 +1,125 @@
+'''
+FUNCTIONS:
+This script will reserve a campsite for you at kirk creek campground in big sur
+this campground is notoriously difficult to get a reservation at which is the reason I created this
+reservations open each day at 10AM for a date six months in advance so you need to plan ahead
+weekend sites will all be booked within 10 minutes so this is likely not the only automated script being used to reserve here
+
+VARIABLES:
+you will need to have an account at the site (recreation.gov)
+enter your login information as well as credit card info and reservation details (number of people/vehicles)
+this script will take the FIRST AVAILABLE camp site - it is not set up to get a specific site
+
+REQUIREMENTS:
+python 2.7, webdriver, recreation.gov account, credit card
+
+NOTE:
+I HIGHLY RECOMMEND running this from a cronjob from your machine at 10:01 AM
+If there are no sites available it should be able to navigate to the next page and grab one from page 2
+There is also a pop-up that occurs at random times but the script shuold be able to move past it
+you can see the script in action here: https://www.youtube.com/watch?v=HbvBkXGdtGA
+
+'''
+
+import time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+ 
+##VARIABLES###
+uname='HumanPerson@gmail.com'
+passwd='PASSWORD'
+ad='Mon Sep 03 2018'
+dd='Tue Sep 04 2018'
+ccnum='379700000000000'
+ccfname='William'
+cclname='Musat'
+ccexpmon='11'
+ccexpyr='21'
+ccsecret='1234'
+peeps='4'
+vehic='2'
+ 
+###BROWSER OPTIONS###
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--incognito")
+driver = webdriver.Chrome(chrome_options=chrome_options)
+driver.implicitly_wait(8) # seconds
+ 
+ 
+ 
+ 
+###START SCRIPT###
+driver.get("https://www.recreation.gov/camping/kirk-creek-campground/r/campgroundDetails.do?contractCode=NRSO&parkId=71993")
+ 
+arrival = driver.find_element_by_id("arrivalDate")
+arrival.send_keys("",ad)
+ 
+departure = driver.find_element_by_id("departureDate")
+departure.send_keys("",dd)
+ 
+filter = driver.find_element_by_id("filter").click()
+ 
+seeAvail = driver.find_element_by_link_text("See Details").click()
+bookDates = driver.find_element_by_id("btnbookdates").click()
+ 
+ 
+try:
+    closePop = driver.find_element_by_link_text("No, thanks").click()
+except:
+    pass
+ 
+username = driver.find_element_by_id("AemailGroup_1733152645")
+username.send_keys('',uname)
+ 
+ 
+password = driver.find_element_by_id("ApasswrdGroup_704558654")
+password.send_keys('',passwd)
+ 
+cont = driver.find_element_by_name("submitForm").click()
+ 
+try:
+    closePop = driver.find_element_by_link_text("No, thanks").click()
+except:
+    pass
+ 
+ 
+ 
+ 
+campers = driver.find_element_by_name("numberOfCampers")
+campers.send_keys('',peeps)
+ 
+vehicles = driver.find_element_by_name("numberOfVehicles")
+vehicles.send_keys(Keys.CONTROL + "a");
+vehicles.send_keys(Keys.DELETE);
+vehicles.send_keys('',vehic)
+ 
+agree = driver.find_element_by_name("agreementAccepted").click()
+ 
+cont2 = driver.find_element_by_id("continueshop").click()
+ 
+chkout = driver.find_element_by_id("chkout").click()
+ 
+cardType = driver.find_element_by_xpath('//*[@id="cardTypeId_1"]/option[3]').click()
+ 
+card = driver.find_element_by_id("cardnum_1")
+card.send_keys('', ccnum)
+ 
+secnum = driver.find_element_by_id("seccode_1")
+secnum.send_keys('', ccsecret)
+ 
+expmonth = driver.find_element_by_id("expmonth_1")
+expmonth.send_keys('', ccexpmon)
+ 
+expyear = driver.find_element_by_id("expyear_1")
+expyear.send_keys('', ccexpyr)
+ 
+fname = driver.find_element_by_id("fname_1")
+fname.send_keys('', ccfname)
+ 
+lname = driver.find_element_by_id("lname_1")
+lname.send_keys('', cclname)
+ 
+agree2 = driver.find_element_by_id("ackacc").click()
+ 
+###DANGER THIS WILL PURCHASE IT###
+#checkout = driver.find_element_by_id("chkout").click()
