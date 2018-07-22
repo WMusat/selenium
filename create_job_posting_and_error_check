@@ -1,0 +1,111 @@
+'''
+REQUIREMENTS:
+python 2.7, unittest, selenium webdriver
+
+NOTE:
+also uses an online site for testing automation code
+
+
+FUNCTIONS:
+logs into the website, creates a new job post, and makes sure the job posting got created
+once the job is confirmed to be created it will delete the job posting to put the envinronment back in a clean state
+the script will also make sure the job got deleted correctly
+
+VARIABLES THAT NEED ADJUSTED:
+none
+
+
+'''
+
+
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+import time
+ 
+jobID="JOB ID:9764"
+ 
+class HRTesting(unittest.TestCase):
+    @classmethod
+    def setUpClass(inst):
+        inst.driver = webdriver.Chrome()
+        inst.driver.implicitly_wait(5)
+        inst.driver.maximize_window()
+        inst.driver.get("http://opensource.demo.orangehrmlive.com/index.php/dashboard")
+        inst.driver.title
+        inst.mouse = webdriver.ActionChains(inst.driver)
+        inst.time = time
+ 
+    def test_1_loginToSite(self):
+        self.uname = self.driver.find_element_by_id("txtUsername")
+        self.uname.send_keys("admin")
+        self.passwd = self.driver.find_element_by_id("txtPassword")
+        self.passwd.send_keys("admin")
+        self.login = self.driver.find_element_by_id("btnLogin").click()
+        loginCheck = self.driver.find_element_by_tag_name('body').text
+        self.assertTrue("Dashboard" in loginCheck)
+ 
+ 
+    def test_2_goToRecruit(self):
+        self.recruit = "http://opensource.demo.orangehrmlive.com/index.php/recruitment/viewJobVacancy"
+        self.driver.get(self.recruit)
+        self.addJob = self.driver.find_element_by_id("btnAdd").click()
+ 
+    def test_3_createJob(self):
+        self.time.sleep(5)
+ 
+        self.select = Select(self.driver.find_element_by_id("addJobVacancy_jobTitle"))
+        self.select.select_by_value("3")
+ 
+        self.vacancyName = self.driver.find_element_by_id("addJobVacancy_name")
+        self.vacancyName.send_keys(jobID)
+ 
+        self.manager = self.driver.find_element_by_id("addJobVacancy_hiringManager")
+        self.manager.send_keys("Linda Anderson")
+ 
+        self.numOfPositions = self.driver.find_element_by_id("addJobVacancy_noOfPositions")
+        self.numOfPositions.send_keys("1")
+ 
+        self.description = self.driver.find_element_by_id("addJobVacancy_description")
+        self.description.send_keys("JOB AVAILABLE PLEASE SEND RESUME")
+ 
+        self.save = self.driver.find_element_by_id("btnSave").click()
+ 
+    def test_4_doubleCheck(self):
+        self.time.sleep(5)
+        backButton = self.driver.find_element_by_id("btnBack").click()
+        idCheck = self.driver.find_element_by_tag_name('body').text
+        self.assertTrue(jobID in idCheck)
+ 
+    def test_5_deleteJob(self):
+        self.selectJob = Select(self.driver.find_element_by_id("vacancySearch_jobVacancy"))
+        self.selectJob.select_by_visible_text(jobID)
+        self.time.sleep(1)
+        search = self.driver.find_element_by_id("btnSrch").click()
+        self.time.sleep(1)
+        all = self.driver.find_element_by_id("ohrmList_chkSelectAll").click()
+        self.time.sleep(1)
+        delete = self.driver.find_element_by_id("btnDelete").click()
+        self.time.sleep(1)
+        confirm = self.driver.find_element_by_id("dialogDeleteBtn").click()
+ 
+        self.selectAll = Select(self.driver.find_element_by_id("vacancySearch_jobVacancy"))
+        self.selectAll.select_by_visible_text("All")
+        searchAll = self.driver.find_element_by_id("btnSrch").click()
+ 
+        deleteCheck = self.driver.find_element_by_tag_name('body').text
+        self.assertFalse(jobID in deleteCheck)
+ 
+ 
+ 
+    @classmethod
+    def tearDownClass(inst):
+        # close the browser window
+        inst.driver.quit()
+ 
+if __name__ == '__main__':
+    unittest.main()
